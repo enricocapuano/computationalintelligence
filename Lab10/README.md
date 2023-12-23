@@ -6,7 +6,7 @@ The class TicTacToe defines the functioning of the game itself, giving a good pr
 Moreover, it has methods to define a move and to check when the game is over and who is the winner. 
 
 In the context of Reinforcement Learning, we implememted a Q-Learning agent, based on a Q table that gathers the Q values for all the moves that an agent may do.
-The Q Agent is trained to choose the best move, according to this table. One Q agent will have positive reward, while the other will have negative: according to this, the first one will choose the move with the highest Q value, the other the one with the lowest.
+The Q Agent is trained to choose the best move, according to this table. Depending on which player is playing (X or O), the Q Agent performs different actions: X gets positive reward, while O negative.
 
 For each agent, the winning rate is computed as the number of winning games over the number of total games.
 
