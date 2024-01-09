@@ -12,6 +12,29 @@ class QPlayer(Player):
         #return from_pos, move
         pass
 
+class Environment:
+    def __init__(self):
+        self.game = Game()
+        self.board = self.game._board  # Representing the Tic Tac Toe board
+        self.current_player = 'X'  # Player 'X' starts the game
+    
+    def print_board(self):
+        self.game.print()
+    
+    def available_moves(self, board = None):
+        pass
+
+    def make_move(self, position):
+        pass
+    
+    def check_winner(self):
+        pass
+    
+    def game_over(self):
+        return self.check_winner() or ' ' not in self.board
+    
+    def reset(self):
+        pass
 
 class QLearningAgent:
     def __init__(self, epsilon, alpha=0.5, gamma=0.1):
