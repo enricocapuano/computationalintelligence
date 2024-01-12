@@ -1,5 +1,6 @@
 import random
 from game import Game, Move, Player
+from QPlayer import QPlayer, Environment, train
 
 
 class RandomPlayer(Player):
@@ -23,10 +24,24 @@ class MyPlayer(Player):
 
 
 if __name__ == '__main__':
-    g = Game()
-    g.print()
-    player1 = MyPlayer()
-    player2 = RandomPlayer()
-    winner = g.play(player1, player2)
-    g.print()
+
+    player1 = QPlayer()
+    player1.agent = train(1000)
+    counter = 0
+
+    for _ in range(100):
+        g = Game()
+        g.print()
+
+        env = Environment()
+        env.game = g
+        player1.env = env
+
+        player2 = RandomPlayer()
+        winner = g.play(player1, player2)
+        if winner == 0: ##winner ==1 in case we are the second player
+            counter+= 1
+        g.print()
+
     print(f"Winner: Player {winner}")
+    print(counter)
