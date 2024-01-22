@@ -83,7 +83,7 @@ class Environment:
         self.board = self.game._board
         self.current_player = 'X'
 
-
+# Q-Learning agent to play Tic Tac Toe
 class QLearningAgent:
     def __init__(self, epsilon, alpha=0.5, gamma=0.1):
         self.epsilon = epsilon  # Exploration rate
@@ -169,6 +169,8 @@ def train(episodes):
             
             agent.update_q_value(state, action, reward, next_state, player = player)
             state = next_state
+        
+        agent.epsilon.update()
     
     return agent
 
@@ -204,5 +206,7 @@ class EpsilonScheduler():
 
     def get(self):
         return_val = self.high - self.counter * self.step 
-        self.counter += 1
         return return_val
+    
+    def update(self):
+        self.counter += 1
