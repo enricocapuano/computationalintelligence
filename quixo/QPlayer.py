@@ -83,7 +83,7 @@ class Environment:
         self.board = self.game._board
         self.current_player = 'X'
 
-# Q-Learning agent to play Tic Tac Toe
+
 class QLearningAgent:
     def __init__(self, epsilon, alpha=0.5, gamma=0.1):
         self.epsilon = epsilon  # Exploration rate
