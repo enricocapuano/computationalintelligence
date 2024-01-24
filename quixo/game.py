@@ -104,8 +104,8 @@ class Game(object):
                 from_pos, slide = players[self.current_player_idx].make_move(
                     self)
                 ok = self.__move(from_pos, slide, self.current_player_idx)
-            print(from_pos, slide)
-            print(self._board)
+            #print(from_pos, slide)
+            #print(self._board)
             winner = self.check_winner()
         return winner
 

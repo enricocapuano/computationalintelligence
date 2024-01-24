@@ -152,10 +152,11 @@ def train(episodes):
         while not env.game_over():
             available_moves = env.available_moves()
             player = env.current_player
+            #print(player)
             action = agent.choose_action(state, available_moves, play_as=player)
             env.make_move(action)
             next_state = tuple(env.board.flatten().tolist())
-            
+            #print(next_state)
             if env.check_winner() == 'X':
                 reward = 1
 
@@ -164,7 +165,7 @@ def train(episodes):
                 reward = -1
 
             else:
-                reward = 0
+                reward = intermediate_reward(env, player)
             
             
             agent.update_q_value(state, action, reward, next_state, player = player)
@@ -173,6 +174,68 @@ def train(episodes):
         agent.epsilon.update()
     
     return agent
+
+def intermediate_reward(env, player):
+    game = env.game
+    board = game.get_board()
+    #print(board)
+    p = 0
+    #print(player)
+    if player == 'X':
+        p = 1
+    reward = 0
+    #print("player: "+str(p))
+    count_center = 0
+    for i in range(1, 4):
+        for j in range(1, 4):
+            element = board[i][j]
+            #print(element)
+            if element == p:
+                count_center += 1
+
+    count_good = 0
+    for i in range(0, 5):  
+        count_on_rows = 0
+        count_on_cols = 0
+        for j in range(0, 5):
+            element_row = board[i][j]
+            element_col = board[j][i]
+            if element_row == p:
+                count_on_rows += 1
+            if element_col == p:
+                count_on_cols += 1
+        if count_on_rows == 4 or count_on_cols == 4:
+            count_good += 1
+      
+    diag = np.diag(board)
+    count_diag = 0
+    count_good_diag = 0
+    for e in diag:
+        if e == p:
+            count_diag += 1
+    if count_diag == 4:
+        count_good += 1
+        count_good_diag += 1
+    
+    opposite_diag = [board[i][4 - i] for i in range(5)]
+    count_opp_diag = 0
+    for e in opposite_diag:
+        if e == p:
+            count_opp_diag += 1
+    if count_opp_diag == 4:
+        count_good += 1
+        count_good_diag += 1
+    
+    #print("diagonal: "+str(count_good_diag))
+    #print("vertical and horizontal: "+str(count_good-count_good_diag))
+    #print("total good: "+str(count_good))
+    c0 = 0.3
+    c1 = 1 - c0
+    reward = c0*(count_center/9) + c1*(count_good/12)
+    if player == 'O':
+        reward = -reward
+    #print(reward)
+    return reward
 
 def agent_vs_agent(agentX, agentO):
     env = Environment()
