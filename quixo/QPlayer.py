@@ -156,7 +156,9 @@ def train(episodes):
             player = env.current_player
             action = agent.choose_action(state, available_moves, play_as=player)
 
-            augmented_states, augmented_actions = generate_augmentation(deepcopy(env.board),deepcopy(action) )
+            augmented_states, augmented_actions = generate_augmentation(deepcopy(env.board),deepcopy(action))
+
+            #if env.current_player == 'X':
 
             env.make_move(action)
             next_state = tuple(env.board.flatten().tolist())
@@ -205,14 +207,14 @@ class EpsilonScheduler():
     def __init__(self, low, high, num_round):
         self.low = low
         self.high = high
-        self.num_round = num_round * 9
+        self.num_round = num_round * 25
         self.step = (high - low) / num_round
 
         self.counter = 0
 
     def get(self):
         return_val = self.high - self.counter * self.step 
-        return return_val
+        return return_val if return_val > self.low else self.low
     
     def update(self):
         self.counter += 1
@@ -311,7 +313,7 @@ def generate_augmentation(board, action):
         augmented_actions.append(rotated_action)
         augmented_actions.append(flipped_action)
 
-        return augmented_states, augmented_actions
+    return augmented_states, augmented_actions
         
 def rotate_and_flip(pos, i):
     x = pos[1]-2
@@ -338,6 +340,18 @@ def rotate_and_flip(pos, i):
 
     return rotated_pos, flipped_pos
 
+def change(a):
+    x = np.zeros(a.shape, dtype= int)
+    for i in range(a.shape[0]):
+        for j in range(a.shape[1]):
+            if a[i][j] == 0:
+                x[i][j] = 1
+            elif a[i][j] == 1:
+                x[i][j] = 0
+            else:
+                x[i][j] = a[i][j]
+    
+    return x
 
 if __name__ == '__main__':
     for i in range(0,4):
