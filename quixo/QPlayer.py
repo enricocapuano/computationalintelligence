@@ -4,6 +4,7 @@ from collections import defaultdict
 from tqdm.auto import tqdm
 from itertools import product
 import numpy as np
+from copy import deepcopy
 
 POSITION = [pos for pos in product((0,4), range(5))] + [pos for pos in product((1,2,3), (0,4))]
 MOVE = [Move.BOTTOM, Move.TOP, Move.LEFT, Move.RIGHT]
@@ -73,7 +74,7 @@ class Environment:
         y = False
 
         COUNTER = COUNTER + 1
-        if COUNTER == 1000:
+        if COUNTER == 100:
             y = True
             COUNTER = 0
         return x is not None or y
@@ -149,14 +150,17 @@ def train(episodes):
     for episode in tqdm(range(episodes)):
         env.reset()
         state = tuple(env.board.flatten().tolist())
+
         while not env.game_over():
             available_moves = env.available_moves()
             player = env.current_player
-            #print(player)
             action = agent.choose_action(state, available_moves, play_as=player)
+
+            augmented_states, augmented_actions = generate_augmentation(deepcopy(env.board),deepcopy(action) )
+
             env.make_move(action)
             next_state = tuple(env.board.flatten().tolist())
-            #print(next_state)
+            
             if env.check_winner() == 'X':
                 reward = 1
 
@@ -167,14 +171,52 @@ def train(episodes):
             else:
                 reward = intermediate_reward(env, player)
             
-            
-            agent.update_q_value(state, action, reward, next_state, player = player)
+            for state, action in zip(augmented_states, augmented_actions):
+                agent.update_q_value(state, action, reward, next_state, player = player)
+
             state = next_state
         
         agent.epsilon.update()
     
     return agent
 
+def agent_vs_agent(agentX, agentO):
+    env = Environment()
+    state = tuple(env.board.flatten().tolist())
+    
+    while not env.game_over():
+        if env.current_player == 'X':
+            available_moves = env.available_moves()
+            action = agentX.choose_action(state, available_moves, play_as = 'X', playing = True)
+            env.make_move(action)
+
+        else:
+            available_moves = env.available_moves()
+            action = agentO.choose_action(state, available_moves, play_as = 'O', playing = True)
+            env.make_move(action)
+
+        
+        state = tuple(env.board.flatten().tolist())
+
+    
+    return env.check_winner()
+
+class EpsilonScheduler():
+    def __init__(self, low, high, num_round):
+        self.low = low
+        self.high = high
+        self.num_round = num_round * 9
+        self.step = (high - low) / num_round
+
+        self.counter = 0
+
+    def get(self):
+        return_val = self.high - self.counter * self.step 
+        return return_val
+    
+    def update(self):
+        self.counter += 1
+    
 def intermediate_reward(env, player):
     game = env.game
     board = game.get_board()
@@ -237,39 +279,68 @@ def intermediate_reward(env, player):
     #print(reward)
     return reward
 
-def agent_vs_agent(agentX, agentO):
-    env = Environment()
-    state = tuple(env.board.flatten().tolist())
-    
-    while not env.game_over():
-        if env.current_player == 'X':
-            available_moves = env.available_moves()
-            action = agentX.choose_action(state, available_moves, play_as = 'X', playing = True)
-            env.make_move(action)
+def generate_augmentation(board, action):
+    augmented_states = []
+    augmented_actions= []
 
+    for i in range(0, 4):
+        rotated_board = np.rot90(board, k = i, axes=(0,1))
+        flipped_board = np.flip(rotated_board, axis= 0)
+
+        rotated_state = tuple(rotated_board.flatten().tolist())
+        flipped_state = tuple(flipped_board.flatten().tolist())
+
+        from_pos = (action[0][0], action[0][1])
+        slide = action[1]
+
+        rotated_pos, flipped_pos = rotate_and_flip(from_pos, i)
+        rotated_slide = Move._value2member_map_[(slide.value + 1) % 4]
+
+        if slide == Move.LEFT or slide == Move.RIGHT:
+            flipped_slide = slide
+        elif slide == Move.TOP:
+            flipped_slide = Move.RIGHT
         else:
-            available_moves = env.available_moves()
-            action = agentO.choose_action(state, available_moves, play_as = 'O', playing = True)
-            env.make_move(action)
+            flipped_slide = Move.BOTTOM
 
+        rotated_action = ((rotated_pos[0],rotated_pos[1]), rotated_slide)
+        flipped_action = ((flipped_pos[0],flipped_pos[1]), flipped_slide)
         
-        state = tuple(env.board.flatten().tolist())
+        augmented_states.append(rotated_state)
+        augmented_states.append(flipped_state)
+        augmented_actions.append(rotated_action)
+        augmented_actions.append(flipped_action)
 
+        return augmented_states, augmented_actions
+        
+def rotate_and_flip(pos, i):
+    x = pos[1]-2
+    y = pos[0]-2
+
+    rotated_xy = None
+    flipped_xy = None
+
+    if i == 0:
+        rotated_xy = (x,y)
+        flipped_xy = (x, -y)
+    elif i == 1:
+        rotated_xy = (-y, x)
+        flipped_xy = (-y, -x)
+    elif i == 2:
+        rotated_xy = (-x,-y)
+        flipped_xy = (-x, y)
+    elif i == 3:
+        rotated_xy = (y, -x)
+        flipped_xy = (y, x)
     
-    return env.check_winner()
+    rotated_pos = (rotated_xy[1] + 2, rotated_xy[0] + 2)
+    flipped_pos = (flipped_xy[1] + 2, flipped_xy[0] + 2)
 
-class EpsilonScheduler():
-    def __init__(self, low, high, num_round):
-        self.low = low
-        self.high = high
-        self.num_round = num_round * 9
-        self.step = (high - low) / num_round
+    return rotated_pos, flipped_pos
 
-        self.counter = 0
 
-    def get(self):
-        return_val = self.high - self.counter * self.step 
-        return return_val
-    
-    def update(self):
-        self.counter += 1
+if __name__ == '__main__':
+    for i in range(0,4):
+        print(rotate_and_flip((0,0),i))
+ 
+         
