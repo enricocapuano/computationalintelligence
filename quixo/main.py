@@ -2,6 +2,12 @@ import random
 from game import Game, Move, Player
 from QPlayer import QPlayer, Environment, train
 
+import numpy as np
+
+SEED = 123456789
+np.random.seed(SEED)
+random.seed(SEED)
+
 
 class RandomPlayer(Player):
     def __init__(self) -> None:
@@ -26,7 +32,7 @@ class MyPlayer(Player):
 if __name__ == '__main__':
 
     player1 = QPlayer()
-    player1.agent = train(10000)
+    player1.agent = train(1000)
     counter = 0
 
     for _ in range(100):
@@ -45,3 +51,4 @@ if __name__ == '__main__':
 
     print(f"Winner: Player {winner}")
     print(counter)
+    print(QPlayer.COUNTER2)
