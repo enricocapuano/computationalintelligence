@@ -4,7 +4,7 @@ from QPlayer import QPlayer, Environment, train
 
 import numpy as np
 
-SEED = 123456789
+SEED = 567891234
 np.random.seed(SEED)
 random.seed(SEED)
 
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     for _ in range(100):
         g = Game()
-        g.print()
+        #g.print()
 
         env = Environment()
         env.game = g
@@ -47,8 +47,8 @@ if __name__ == '__main__':
         winner = g.play(player1, player2)
         if winner == 0: ##winner ==1 in case we are the second player
             counter+= 1
-        g.print()
+        #g.print()
 
     print(f"Winner: Player {winner}")
     print(counter)
-    print(QPlayer.COUNTER2)
+    print(QPlayer.COUNTER)
