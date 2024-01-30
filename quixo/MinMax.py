@@ -8,7 +8,8 @@ class MinMax(Player):
         super().__init__()
 
     def make_move(self, game: 'Game', play_as) -> tuple[tuple[int, int], Move]:
-        best_move, _ = self.minimax(game, depth=2, alpha=float('-inf'), beta=float('inf'), maximizing_player=(True if play_as == 'X' else False))
+        best_move, _ = self.minimax(game, depth=2, alpha=float('-inf'), beta=float('inf'), 
+                                    maximizing_player=(True if play_as == 'X' else False))
         return best_move
 
     def minimax(self, game: 'Game', depth: int, alpha: float, beta: float, maximizing_player: bool) -> tuple[tuple[int, int], float]:

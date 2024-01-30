@@ -100,7 +100,7 @@ class Environment:
         self.game._board = np.ones((5, 5), dtype=np.uint8) * -1
         self.current_player = 'X'
 
-# Q-Learning agent to play Tic Tac Toe
+# Q-Learning agent to play Quixo
 class QLearningAgent:
     def __init__(self, epsilon, alpha=0.5, gamma=0.1):
         self.epsilon = epsilon  # Exploration rate
