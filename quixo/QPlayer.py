@@ -191,6 +191,7 @@ def train(episodes):
             print(f'current player {player_id}')
 
             going_to_win, action = one_move_to_win(env, player_id)
+            #we do that for faster convergence
             if not going_to_win:
                 action = agent.choose_action(state, available_moves, play_as=player)
             #action = agent.choose_action(state, available_moves, play_as=player)
